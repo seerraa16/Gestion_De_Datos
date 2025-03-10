@@ -18,32 +18,50 @@ LEFT JOIN
 --- Dimension Clientes
 
 SELECT
-[Customer_ID]
-    ,clientes.[CODIGO_POSTAL]
-    ,[CP]
-    ,[CP_value]
+    [Customer_ID],
+    -- Añadimos el prefijo "CP" al código postal de clientes
+    CONCAT('CP', clientes.[CODIGO_POSTAL]) AS CODIGO_POSTAL_FORMATADO, 
+    clientes.[RENTA_MEDIA_ESTIMADA],
+    clientes.[Fecha_nacimiento],
+    clientes.[STATUS_SOCIAL],
+    -- El CP de la tabla cp ya tiene el prefijo "CP"
+    cp.[CP],
+    mosaic.[CP_value]
+FROM [DATAEX].[003_clientes] clientes
+LEFT JOIN 
+  [DATAEX].[005_cp] cp ON CONCAT('CP', clientes.[CODIGO_POSTAL]) = cp.[CP]  -- Aquí igualamos con el CP con prefijo
+LEFT JOIN 
+  [DATAEX].[019_Mosaic] mosaic ON clientes.[CODIGO_POSTAL] = mosaic.[CP_value]  -- Mosaic tiene el CP sin prefijo
 
-FROM [DATAEX].[003_cliente] clientes
-LEFT JOIN
-  [DATAEX].[005_cp] cp ON clientes.CODIGO_POSTAL = cp.CODIGO_POSTAL
-LEFT JOIN
-  [DATAEX].[010_Mosaic] cp_value ON clientes.CODIGO_POSTAL = cp_value.CODIGO_POSTAL
 
 
 
---- Dimensio producto
+--- Dimension producto
 SELECT
 [Id_Producto]
-  ,producto.[Code_]
-  ,producto.[Fuel_ID]
-  ,producto.[CATEGORIA_ID]
-  ,producto.[Modelo]
-  ,[Fuel_ID]
-  ,[FUEL]
-  ,[CATEGORIA_ID]
-  ,[Grade_ID]
-  ,[Equipamiento]
-  ,
+    ,producto.[Code_]
+    ,producto.[Fuel_ID]
+    ,producto.[CATEGORIA_ID]
+    ,producto.[Modelo]
+    ,fuel.[Fuel_ID]
+    ,fuel.[FUEL]
+    ,categoría_producto.[CATEGORIA_ID]
+    ,categoría_producto.[Grade_ID]
+    ,categoría_producto.[Equipamiento]
+    ,costes.[Modelo]
+    ,costes.[Costetransporte]
+    ,costes.[GastosMarketing]
+    ,costes.[Mantenimiento_medio]
+    ,costes.[Comisión_Marca]
+
+FROM [DATAEX].[006_producto] producto
+LEFT JOIN
+  [DATAEX].[015_fuel] fuel ON producto.Fuel_ID = fuel.Fuel_ID
+LEFT JOIN
+  [DATAEX].[014_categoría_producto] categoría_producto ON producto.CATEGORIA_ID = categoría_producto.CATEGORIA_ID
+LEFT JOIN
+  [DATAEX].[007_costes] costes ON producto.Modelo = costes.Modelo
+
 
 
 --- Dimension Tiempo 
