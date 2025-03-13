@@ -20,13 +20,13 @@ LEFT JOIN
 SELECT
     [Customer_ID],
     -- Añadimos el prefijo "CP" al código postal de clientes
-    CONCAT('CP', clientes.[CODIGO_POSTAL]) AS CODIGO_POSTAL_FORMATADO, 
+    clientes.[CODIGO_POSTAL], 
     clientes.[RENTA_MEDIA_ESTIMADA],
     clientes.[Fecha_nacimiento],
     clientes.[STATUS_SOCIAL],
     -- El CP de la tabla cp ya tiene el prefijo "CP"
     cp.[CP],
-    mosaic.[CP_value]
+    CONCAT('CP', mosaic.[CP_value]) AS CODIGO_POSTAL_FORMATADO, 
 FROM [DATAEX].[003_clientes] clientes
 LEFT JOIN 
   [DATAEX].[005_cp] cp ON CONCAT('CP', clientes.[CODIGO_POSTAL]) = cp.[CP]  -- Aquí igualamos con el CP con prefijo
@@ -43,9 +43,7 @@ SELECT
     ,producto.[Fuel_ID]
     ,producto.[CATEGORIA_ID]
     ,producto.[Modelo]
-    ,fuel.[Fuel_ID]
     ,fuel.[FUEL]
-    ,categoría_producto.[CATEGORIA_ID]
     ,categoría_producto.[Grade_ID]
     ,categoría_producto.[Equipamiento]
     ,costes.[Modelo]
