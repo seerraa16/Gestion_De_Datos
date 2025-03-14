@@ -19,21 +19,20 @@ LEFT JOIN
 
 SELECT
     [Customer_ID],
-    -- Añadimos el prefijo "CP" al código postal de clientes
-    clientes.[CODIGO_POSTAL], 
     clientes.[RENTA_MEDIA_ESTIMADA],
     clientes.[Fecha_nacimiento],
     clientes.[STATUS_SOCIAL],
-    -- El CP de la tabla cp ya tiene el prefijo "CP"
-    cp.[CP],
-    CONCAT('CP', mosaic.[CP_value]) AS CODIGO_POSTAL_FORMATADO, 
+    -- Unificamos los códigos postales en una sola columna
+    COALESCE(
+        cp.[CP],                     -- Código postal de la tabla cp (con prefijo "CP")
+        CONCAT('CP', mosaic.[CP_value]), -- Código postal de la tabla mosaic (le añadimos el prefijo "CP")
+        CONCAT('CP', clientes.[CODIGO_POSTAL]) -- Código postal de la tabla clientes (le añadimos el prefijo "CP")
+    ) AS CODIGO_POSTAL_UNIFICADO
 FROM [DATAEX].[003_clientes] clientes
 LEFT JOIN 
-  [DATAEX].[005_cp] cp ON CONCAT('CP', clientes.[CODIGO_POSTAL]) = cp.[CP]  -- Aquí igualamos con el CP con prefijo
+  [DATAEX].[005_cp] cp ON clientes.[CODIGO_POSTAL] = cp.[CP]  -- Unimos por CP con prefijo
 LEFT JOIN 
-  [DATAEX].[019_Mosaic] mosaic ON clientes.[CODIGO_POSTAL] = mosaic.[CP_value]  -- Mosaic tiene el CP sin prefijo
-
-
+  [DATAEX].[019_Mosaic] mosaic ON clientes.[CODIGO_POSTAL] = mosaic.[CP_value];  -- Unimos por CP sin prefijo
 
 
 --- Dimension producto
@@ -65,11 +64,11 @@ LEFT JOIN
 --- Dimension Tiempo 
 SELECT
 [Date]
-    ,date.[Dia]
-    ,date.[Mes]
-    ,date.[Anno]
-    ,date.[Week]      
-    ,[ZONA]
+
     
     
 
+-- Hacer con ids calcular todas las cosas que no esyan en las tablas de dimensiones y todas las medidas: margen (esta en el portal) importante que esten todas las nedidas
+
+
+SELECT
