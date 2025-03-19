@@ -39,7 +39,6 @@ LEFT JOIN
 SELECT
 [Id_Producto]
     ,producto.[Code_]
-    ,producto.[Fuel_ID]
     ,producto.[CATEGORIA_ID]
     ,producto.[Modelo]
     ,fuel.[FUEL]
@@ -62,11 +61,11 @@ LEFT JOIN
 
 
 --- Dimension Tiempo 
-SELECT
-[Date]
+SELECT * 
+FROM [DATAEX].[002_date] 
 
-    
-    
+
+
 
 -- Hacer con ids calcular todas las cosas que no esyan en las tablas de dimensiones y todas las medidas: margen (esta en el portal) importante que esten todas las nedidas
 
