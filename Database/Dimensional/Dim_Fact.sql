@@ -19,7 +19,6 @@ SELECT
     costes.[GastosMarketing],
     costes.[Comisión_marca],
 
-
     -- Cálculo de Margen Bruto en euros
     ROUND(sales.PVP * (Margen)*0.01 * (1 - IMPUESTOS / 100), 2) AS Margen_eur_bruto,
 

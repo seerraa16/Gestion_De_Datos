@@ -5,6 +5,21 @@ SELECT
     clientes.[RENTA_MEDIA_ESTIMADA],
     clientes.[Fecha_nacimiento],
     clientes.[STATUS_SOCIAL],
+    mosaic.[CP_value],
+    mosaic.[A],
+    mosaic.[B],
+    mosaic.[C],
+    mosaic.[D],
+    mosaic.[E],
+    mosaic.[F],
+    mosaic.[G],
+    mosaic.[H],
+    mosaic.[I],
+    mosaic.[J],
+    mosaic.[K],
+    
+
+    
     -- Unificamos los códigos postales en una sola columna
     COALESCE(
         cp.[CP],                     -- Código postal de la tabla cp (con prefijo "CP")
