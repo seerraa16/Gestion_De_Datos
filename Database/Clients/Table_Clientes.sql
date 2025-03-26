@@ -1,64 +1,72 @@
--- Tabla de Clientes (no dimensional)
-SELECT [Clientes] (
-    [Customer_ID] INT PRIMARY KEY,
-    [Nombre] NVARCHAR(100),
-    [Apellidos] NVARCHAR(100),
-    [Edad] INT,
-    [Fecha_nacimiento] DATE,
-    [Genero] NVARCHAR(20),
-    [Codigo_Postal] NVARCHAR(10),
-    [Direccion] NVARCHAR(200),
-    [Email] NVARCHAR(100),
-    [Telefono] NVARCHAR(20),
-    [Fecha_Alta] DATE,
-    [Status_Social] NVARCHAR(50),
-    [Renta_Media_Estimada] INT,
-    [Encuesta_Zona_Cliente_Venta] INT,
-    [Encuesta_Cliente_Zona_Taller] INT,
-    [CodigoPostal_ID] INT,  -- FK a tabla dimensional de códigos postales
-    [Mosaic_ID] INT         -- FK a tabla dimensional de mosaic
-);
+WITH CustomerAggregates AS (
+    SELECT 
+        sales.Customer_ID,
+        -- Número total de ventas por cliente
+        COUNT(sales.CODE) AS num_ventas,
 
--- Insertar datos desde las tablas originales
-INSERT INTO [Clientes] (
-    [Customer_ID],
-    [Edad],
-    [Fecha_nacimiento],
-    [Genero],
-    [Codigo_Postal],
-    [Status_Social],
-    [Renta_Media_Estimada],
-    [Encuesta_Zona_Cliente_Venta],
-    [Encuesta_Cliente_Zona_Taller],
-    [CodigoPostal_ID],
-    [Mosaic_ID]
+        -- Precio medio de venta (ticket promedio)
+        AVG(CAST(sales.PVP AS DECIMAL(10,2))) AS pvp_medio,
+
+        -- Coste medio de venta
+        AVG(CAST(sales.COSTE_VENTA_NO_IMPUESTOS AS DECIMAL(10,2))) AS coste_medio,
+
+        -- Última fecha de compra del cliente
+        MAX(sales.Sales_Date) AS ultima_fecha_compra,
+
+        -- Precio mínimo y máximo pagado
+        MIN(CAST(sales.PVP AS DECIMAL(10,2))) AS pvp_min,
+        MAX(CAST(sales.PVP AS DECIMAL(10,2))) AS pvp_max,
+
+        -- Margen medio generado por el cliente
+        AVG(CAST(sales.Margen_eur AS DECIMAL(10,2))) AS margen_medio
+    FROM [DATAEX].[001_sales] sales
+    GROUP BY sales.Customer_ID
+),
+
+FechasLimpias AS (
+    SELECT 
+        sales.Customer_ID,
+        -- Validación de fechas
+        CASE 
+            WHEN ISDATE(sales.Sales_Date) = 1 THEN CAST(sales.Sales_Date AS DATETIME)
+            ELSE NULL
+        END AS Sales_Date_clean
+    FROM [DATAEX].[001_sales] sales
 )
-SELECT 
-    CAST([cliente].[Customer_ID] AS INT),
-    CAST([cliente].[Edad] AS INT),
-    TRY_CONVERT(DATE, [cliente].[Fecha_nacimiento]),
-    [cliente].[GENERO],
-    [cliente].[CODIGO_POSTAL],
-    [cliente].[STATUS_SOCIAL],
-    CAST([cliente].[RENTA_MEDIA_ESTIMADA] AS INT),
-    CAST([cliente].[ENCUESTA_ZONA_CLIENTE_VENTA] AS INT),
-    CAST([cliente].[ENCUESTA_CLIENTE_ZONA_TALLER] AS INT),
-    TRY_CAST([cp].[codigopostalid] AS INT),
-    [mosaic].[Mosaic_number]
-FROM 
-    [DATAEX].[003_clientes] AS [cliente]
-LEFT JOIN
-    [DATAEX].[005_cp] AS [cp] ON [cliente].[CODIGO_POSTAL] = [cp].[CP]
-LEFT JOIN
-    [DATAEX].[019_mosaic] AS [mosaic] ON TRY_CAST([cp].[codigopostalid] AS INT) = TRY_CAST([mosaic].[CP] AS INT);
 
--- Crear relaciones con tablas dimensionales
-ALTER TABLE [Clientes] 
-ADD CONSTRAINT [FK_Clientes_CodigoPostal] 
-FOREIGN KEY ([CodigoPostal_ID]) 
-REFERENCES [Dimension_CodigoPostal]([codigopostalid]);
+SELECT
+    -- Datos del Cliente
+    c.Customer_ID,
+    c.Edad,
+    c.Fecha_nacimiento,
+    c.GENERO,
+    c.CP,
+    c.poblacion,
+    c.provincia,
+    c.STATUS_SOCIAL,
+    c.RENTA_MEDIA_ESTIMADA,
 
-ALTER TABLE [Clientes] 
-ADD CONSTRAINT [FK_Clientes_Mosaic] 
-FOREIGN KEY ([Mosaic_ID]) 
-REFERENCES [Dimension_Mosaic]([Mosaic_number]);
+    -- Datos de Venta
+    f.CODE,
+    f.PVP,
+    f.COSTE_VENTA_NO_IMPUESTOS,
+    f.IMPUESTOS,
+    f.Margen_eur,
+    f.Sales_Date,
+
+    -- Métricas Calculadas
+    agg.num_ventas,
+    agg.pvp_medio,
+    agg.coste_medio,
+    agg.ultima_fecha_compra,
+    agg.pvp_min,
+    agg.pvp_max,
+    agg.margen_medio,
+
+    -- Días desde la última compra
+    DATEDIFF(DAY, agg.ultima_fecha_compra, GETDATE()) AS dias_ultima_compra
+
+FROM [DATAEX].[003_clientes] AS c
+LEFT JOIN [DATAEX].[001_sales] AS f ON c.Customer_ID = f.Customer_ID
+LEFT JOIN CustomerAggregates AS agg ON c.Customer_ID = agg.Customer_ID
+LEFT JOIN FechasLimpias AS fl ON c.Customer_ID = fl.Customer_ID;
