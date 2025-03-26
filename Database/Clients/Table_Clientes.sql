@@ -1,42 +1,5 @@
-WITH CustomerAggregates AS (
-    SELECT 
-        sales.Customer_ID,
-        -- Número total de ventas por cliente
-        COUNT(sales.CODE) AS num_ventas,
-
-        -- Precio medio de venta (ticket promedio)
-        AVG(CAST(sales.PVP AS DECIMAL(10,2))) AS pvp_medio,
-
-        -- Coste medio de venta
-        AVG(CAST(sales.COSTE_VENTA_NO_IMPUESTOS AS DECIMAL(10,2))) AS coste_medio,
-
-        -- Última fecha de compra del cliente
-        MAX(sales.Sales_Date) AS ultima_fecha_compra,
-
-        -- Precio mínimo y máximo pagado
-        MIN(CAST(sales.PVP AS DECIMAL(10,2))) AS pvp_min,
-        MAX(CAST(sales.PVP AS DECIMAL(10,2))) AS pvp_max,
-
-        -- Margen medio generado por el cliente
-        AVG(CAST(sales.Margen_eur AS DECIMAL(10,2))) AS margen_medio
-    FROM [DATAEX].[001_sales] sales
-    GROUP BY sales.Customer_ID
-),
-
-FechasLimpias AS (
-    SELECT 
-        sales.Customer_ID,
-        -- Validación de fechas
-        CASE 
-            WHEN ISDATE(sales.Sales_Date) = 1 THEN CAST(sales.Sales_Date AS DATETIME)
-            ELSE NULL
-        END AS Sales_Date_clean
-    FROM [DATAEX].[001_sales] sales
-)
-
-SELECT
-    -- Datos del Cliente
-    c.Customer_ID,
+SELECT 
+    c.Customer_ID,  -- Solo el Customer_ID de Dim_client
     c.Edad,
     c.Fecha_nacimiento,
     c.GENERO,
@@ -45,28 +8,56 @@ SELECT
     c.provincia,
     c.STATUS_SOCIAL,
     c.RENTA_MEDIA_ESTIMADA,
-
-    -- Datos de Venta
+    c.ENCUESTA_ZONA_CLIENTE_VENTA,
+    c.ENCUESTA_CLIENTE_ZONA_TALLER,
+    c.A,
+    c.B,
+    c.C,
+    c.D,
+    c.E,
+    c.F,
+    c.G,
+    c.H,
+    c.I,
+    c.J,
+    c.K,
+    c.U2,
+    c.Max_Mosaic_G,
+    c.Max_Mosaic2,
+    c.Renta_Media,
+    c.F2,
+    c.Mosaic_number,
     f.CODE,
+    f.TIENDA_ID,
+    f.Id_Producto,
+    f.Date,
+    f.Sales_Date,
     f.PVP,
+    f.MANTENIMIENTO_GRATUITO,
+    f.SEGURO_BATERIA_LARGO_PLAZO,
+    f.FIN_GARANTIA,
     f.COSTE_VENTA_NO_IMPUESTOS,
     f.IMPUESTOS,
+    f.EN_GARANTIA,
+    f.EXTENSION_GARANTIA,
+    f.Margen,
+    f.Margendistribuidor,
+    f.Costetransporte,
+    f.GastosMarketing,
+    f.Comisión_marca,
+    f.Margen_eur_bruto,
     f.Margen_eur,
-    f.Sales_Date,
 
-    -- Métricas Calculadas
-    agg.num_ventas,
-    agg.pvp_medio,
-    agg.coste_medio,
-    agg.ultima_fecha_compra,
-    agg.pvp_min,
-    agg.pvp_max,
-    agg.margen_medio,
+    -- 🔹 Sumatorio de leads con conversión segura
+    COALESCE(TRY_CONVERT(INT, f.Lead_compra), 0) + 
+    COALESCE(TRY_CONVERT(INT, f.fue_Lead), 0) AS Total_Leads,
 
-    -- Días desde la última compra
-    DATEDIFF(DAY, agg.ultima_fecha_compra, GETDATE()) AS dias_ultima_compra
+    -- 🔹 Nueva columna "Churn" basada en DIAS_DESDE_ULTIMA_REVISION
+    CASE 
+        WHEN TRY_CONVERT(INT, f.DIAS_DESDE_ULTIMA_REVISION) > 400 THEN 1 
+        ELSE 0 
+    END AS Churn
 
-FROM [DATAEX].[003_clientes] AS c
-LEFT JOIN [DATAEX].[001_sales] AS f ON c.Customer_ID = f.Customer_ID
-LEFT JOIN CustomerAggregates AS agg ON c.Customer_ID = agg.Customer_ID
-LEFT JOIN FechasLimpias AS fl ON c.Customer_ID = fl.Customer_ID;
+FROM [dbo].[Dim_client] AS c
+LEFT JOIN [dbo].[Facts_Table] AS f 
+    ON c.Customer_ID = f.Customer_ID;

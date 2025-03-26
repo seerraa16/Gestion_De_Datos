@@ -1,5 +1,5 @@
 SELECT
-    [CODE],
+    sales.[CODE],
     tienda.[TIENDA_ID],
     clientes.[Customer_ID],
     producto.[Id_Producto],
@@ -18,6 +18,12 @@ SELECT
     costes.[Costetransporte],
     costes.[GastosMarketing],
     costes.[Comisión_marca],
+    logistic.[Lead_compra],
+    -- Añadir los leads y dias desde la ultima revison 
+    logistic.[fue_Lead],
+    rev.[DIAS_DESDE_ULTIMA_REVISION],
+
+
 
     -- Cálculo de Margen Bruto en euros
     ROUND(sales.PVP * (Margen)*0.01 * (1 - IMPUESTOS / 100), 2) AS Margen_eur_bruto,
@@ -31,6 +37,10 @@ LEFT JOIN [DATAEX].[003_clientes] clientes
     ON sales.Customer_ID = clientes.Customer_ID
 LEFT JOIN [DATAEX].[002_date] tiempo 
     ON sales.Sales_Date = tiempo.Date
+LEFT JOIN [DATAEX].[017_logist] logistic 
+    ON sales.CODE = logistic.CODE
+LEFT JOIN [DATAEX].[004_rev] rev 
+    ON sales.CODE = rev.CODE
 
 LEFT JOIN [DATAEX].[006_producto] producto ON sales.Id_Producto = producto.Id_Producto
 LEFT JOIN [DATAEX].[007_costes] costes ON producto.Modelo = costes.Modelo;
