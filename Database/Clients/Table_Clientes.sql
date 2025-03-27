@@ -61,3 +61,6 @@ SELECT
 FROM [dbo].[Dim_client] AS c
 LEFT JOIN [dbo].[Facts_Table] AS f 
     ON c.Customer_ID = f.Customer_ID;
+
+
+    

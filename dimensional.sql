@@ -155,8 +155,3 @@ LEFT JOIN [DATAEX].[007_costes] costes ON producto.Modelo = costes.Modelo;
  
 
 
-
-
-
-
-    
