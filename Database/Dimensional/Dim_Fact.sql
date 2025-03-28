@@ -36,9 +36,22 @@ SELECT
     ROUND(sales.PVP * (Margen)*0.01 * (1 - IMPUESTOS / 100), 2) AS Margen_eur_bruto,
 
     ROUND(sales.PVP * (Margen)*0.01 * (1 - IMPUESTOS / 100) - sales.COSTE_VENTA_NO_IMPUESTOS - (Margendistribuidor*0.01 + GastosMarketing*0.01-Comisión_Marca*0.01) * sales.PVP * (1 - IMPUESTOS / 100) - Costetransporte, 2) AS Margen_eur,
-    CASE 
-        WHEN TRY_CONVERT(INT, rev.DIAS_DESDE_ULTIMA_REVISION) > 400 THEN 1 
-        ELSE 0 
+-- Tasa de Churn: Indica si la venta ha sido cancelada en los últimos 400 días (1) o no (0).
+    CASE
+            -- Caso 1: Revisión reciente o sin revisión (0-400 días) - No churn.
+        WHEN
+            rev.DIAS_DESDE_ULTIMA_REVISION IS NOT NULL AND
+            rev.DIAS_DESDE_ULTIMA_REVISION <> '' AND
+            TRY_CAST(REPLACE(rev.DIAS_DESDE_ULTIMA_REVISION, '.', '') AS INT) BETWEEN 0 AND 400
+        THEN 0
+            -- Caso 2: Revisión muy antigua (>400 días) - Churn.
+        WHEN
+            rev.DIAS_DESDE_ULTIMA_REVISION IS NOT NULL AND
+            rev.DIAS_DESDE_ULTIMA_REVISION <> '' AND
+            TRY_CAST(REPLACE(rev.DIAS_DESDE_ULTIMA_REVISION, '.', '') AS INT) > 400
+        THEN 1
+            -- Caso 4: Otros valores inesperados - Churn por precaución.
+        ELSE 1
     END AS Churn
 
 FROM [DATAEX].[001_sales] sales

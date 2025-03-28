@@ -50,13 +50,9 @@ SELECT
 
     -- 🔹 Sumatorio de leads con conversión segura
     COALESCE(TRY_CONVERT(INT, f.Lead_compra), 0) + 
-    COALESCE(TRY_CONVERT(INT, f.fue_Lead), 0) AS Total_Leads,
+    COALESCE(TRY_CONVERT(INT, f.fue_Lead), 0) AS Total_Leads
 
-    -- 🔹 Nueva columna "Churn" basada en DIAS_DESDE_ULTIMA_REVISION
-    CASE 
-        WHEN TRY_CONVERT(INT, f.DIAS_DESDE_ULTIMA_REVISION) > 400 THEN 1 
-        ELSE 0 
-    END AS Churn
+
 
 FROM [dbo].[Dim_client] AS c
 LEFT JOIN [dbo].[Facts_Table] AS f 
