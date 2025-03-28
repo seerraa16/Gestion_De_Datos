@@ -21,6 +21,7 @@ SELECT
     logistic.[Lead_compra],
     -- Añadir los leads y dias desde la ultima revison 
     logistic.[fue_Lead],
+    logistic.[t_prod_date],
     rev.[DIAS_DESDE_ULTIMA_REVISION],
     edad.[Car_Age],
     rev.[km_ultima_revision],

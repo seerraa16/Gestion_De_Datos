@@ -52,7 +52,7 @@ SELECT
     SUM(CASE WHEN f.QUEJA = 'SI' THEN 1 ELSE 0 END) AS total_quejas,
 
     -- Datos Demográficos.
-    c.CODIGO_POSTAL,
+    c.CP,
     c.poblacion,
     c.provincia,
     c.lat,
@@ -105,7 +105,7 @@ SELECT
     DATEDIFF(DAY,
         MIN(CONVERT(DATE, f.Sales_Date)),
         MAX(CONVERT(DATE, f.Sales_Date))) AS dias_relacion,
-    AVG(DATEDIFF(DAY, f.Prod_date, f.Sales_Date)) AS avg_dias_produccion_venta,
+    AVG(DATEDIFF(DAY, f.t_prod_date, f.Sales_Date)) AS avg_dias_produccion_venta,
 
     -- Modelo Predictivo: Probabilidad de Churn y Retención.
         -- CHURN.
@@ -155,7 +155,7 @@ GROUP BY
     c.GENERO,
     c.STATUS_SOCIAL,
     c.RENTA_MEDIA_ESTIMADA,
-    c.CODIGO_POSTAL,
+    c.CP,
     c.poblacion,
     c.provincia,
     c.lat,
@@ -169,3 +169,22 @@ ADD CONSTRAINT PK_client_insights PRIMARY KEY (Customer_ID);
 
 -- Resultados: Mostrar los registros de la tabla generada.
 SELECT * FROM client_insights;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
