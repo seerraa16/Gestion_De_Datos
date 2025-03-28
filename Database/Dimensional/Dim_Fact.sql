@@ -24,6 +24,10 @@ SELECT
     rev.[DIAS_DESDE_ULTIMA_REVISION],
     edad.[Car_Age],
     rev.[km_ultima_revision],
+    rev.[Revisiones],
+    cac.[QUEJA],
+    cac.[DIAS_EN_TALLER],
+
 
 
 
@@ -49,6 +53,8 @@ LEFT JOIN [DATAEX].[004_rev] rev
     ON sales.CODE = rev.CODE
 LEFT JOIN [DATAEX].[018_edad] edad 
     ON sales.CODE = edad.CODE
+LEFT JOIN [DATAEX].[008_cac] cac
+    ON sales.CODE = cac.CODE
 
 
 LEFT JOIN [DATAEX].[006_producto] producto ON sales.Id_Producto = producto.Id_Producto

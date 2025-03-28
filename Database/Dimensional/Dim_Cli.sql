@@ -6,6 +6,8 @@ SELECT
     CAST([cp].[codigopostalid] AS INT) AS [CP],
     [cp].[poblacion],
     [cp].[provincia],
+    [cp].[lat],
+    [cp].[lon],
     [cliente].[STATUS_SOCIAL],
     CAST([cliente].[RENTA_MEDIA_ESTIMADA] AS INT) AS [RENTA_MEDIA_ESTIMADA],
     CAST([cliente].[ENCUESTA_ZONA_CLIENTE_VENTA] AS INT) AS [ENCUESTA_ZONA_CLIENTE_VENTA],
